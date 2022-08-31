@@ -40,11 +40,17 @@ class CatalogSpider(scrapy.Spider):
         components = response.css('h6::text').get().split()
 
         for row in sections:
+            available = True
+            class_notes = row.css('td:nth-child(8)').get()
+            if ("Class Closed" in class_notes
+                    or "Class Full" in class_notes):
+                available = False
+
             yield {
                 # 'CAS AA 103' -> ['CAS', 'AA', '103']
                 'college': components[0],
                 'department': components[1],
                 'number': components[2],
                 'code': row.css('td:nth-child(1)::text').get().strip(),
-                'notes': row.css('td:nth-child(8)::text').get(),
+                'availability': available,
             }
