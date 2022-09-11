@@ -17,16 +17,15 @@ class CatalogSpider(scrapy.Spider):
 
     def parse(self, response):
         for search_result in response.css('li.coursearch-result'):
-            """
             # 'CAS AA 103' -> ['CAS', 'AA', '103']
             components = search_result.css('h6::text').get().split()
 
             yield {
+                'type': 'course',
                 'college': components[0],
                 'department': components[1],
                 'number': components[2],
             }
-            """
 
             sections_link = search_result.css(
                 'a.coursearch-result-sections-link').attrib['href']
@@ -40,17 +39,18 @@ class CatalogSpider(scrapy.Spider):
         components = response.css('h6::text').get().split()
 
         for row in sections:
-            available = True
+            is_available = True
             class_notes = row.css('td:nth-child(8)').get()
             if ("Class Closed" in class_notes
                     or "Class Full" in class_notes):
-                available = False
+                is_available = False
 
             yield {
                 # 'CAS AA 103' -> ['CAS', 'AA', '103']
+                'type': 'section',
                 'college': components[0],
                 'department': components[1],
                 'number': components[2],
                 'code': row.css('td:nth-child(1)::text').get().strip(),
-                'availability': available,
+                'is_available': is_available,
             }
